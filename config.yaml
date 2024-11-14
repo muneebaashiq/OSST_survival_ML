@@ -11,7 +11,7 @@ hydra:
 meta:
   in_file: /home/muneeba/survival_repo/survival_ML/Data/80_original.xlsx
   test_file: /home/muneeba/survival_repo/survival_ML/Data/20_original.xlsx
-  out_dir: /home/muneeba/survival_repo/survival_ML/output
+  out_dir: /home/muneeba/survival_repo/survival_ML/output2
   events: "Event"
   times: "Time"
   init_seed: 545
@@ -33,9 +33,10 @@ survival:
   scoring: "as_concordance_index_ipcw_scorer"
   n_cv_splits: 4
   n_iter_search: 5
+  #grid_search_type: "Grid"
   scalers:
-    StandardScaler: True
-    MinMaxScaler: False
+    StandardScaler: False
+    MinMaxScaler: True
     RobustScaler: False
   feature_selectors:
     SelectKBest: True
@@ -54,49 +55,21 @@ survival:
     PCA: {}
     KernelPCA: {}
     TruncatedSVD: {}
+  bucketizers:
+    2BinBucketizer: True
+    3BinBucketizer: False
+    4BinBucketizer: False
   models:
-    CoxPH: True
-    Coxnet: True
-    CoxLasso: False
-    CoxElasticNet: False
+    CoxPH: False
+    OSST: True
     RSF: False
-    FastSVM: False
-    FastKSVM: False
-    GBS: False
-    CGBS: False
   model_params:
     CoxPH:
       model__estimator__alpha: [0.0001, 0.001, 0.01, 0.1, 1, 10]
-      #model__estimator__alpha: [ 10]
-    Coxnet:
-      model__estimator__n_alphas: 100
-      model__estimator__l1_ratio: ${numpy_range:0.1, 1, 0.1}
-    CoxLasso:
-      model__estimator__n_alphas: 100
-    CoxElasticNet:
-      model__estimator__n_alphas: 100
-      model__estimator__l1_ratio: [0.9]
+    OSST:
+      model__estimator__regularization: [0.1]
+      model__estimator__depth_budget: [5]
+      model__estimator__minimum_captured_points: [3]
     RSF:
       model__estimator__n_estimators: [50, 100, 200]
       model__estimator__max_depth: [null, 5, 10]
-    FastSVM:
-      model__estimator__max_iter: [1000]
-      model__estimator__tol: [0.00001]
-      # mod__estimatorel__alpha: ${numpy_range:0.001, 0.01, 0.1}
-      model__estimator__alpha: [0.0001, 0.001, 0.01, 0.1, 1, 10]
-    FastKSVM:
-      model__estimator__max_iter: [1000]
-      model__estimator__tol: [0.00001]
-      model__estimator__kernel: [linear, rbf]
-      # mod__estimatorel__alpha: ${numpy_range:0.001, 0.01, 0.1}
-      model__estimator__alpha: [0.0001, 0.001, 0.01, 0.1, 1, 10]
-    GBS:
-      model__estimator__learning_rate: [0.01, 0.1]
-      model__estimator__n_estimators: [50, 100]
-      model__estimator__dropout_rate: [0.1, 0.5]
-      model__estimator__subsample: [0.8, 1.0]
-    CGBS:
-      model__estimator__learning_rate: [0.01, 0.1]
-      model__estimator__n_estimators: [50, 100]
-      model__estimator__dropout_rate: [0.1, 0.5]
-      model__estimator__subsample: [0.8, 1.0]
