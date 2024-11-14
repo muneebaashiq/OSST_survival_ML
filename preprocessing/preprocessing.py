@@ -128,8 +128,8 @@ class Preprocessing:
         upper_triangle = corr_matrix.where(np.triu(np.ones(corr_matrix.shape), k=1).astype(bool))
         to_drop = [col for col in upper_triangle.columns if any(upper_triangle[col] > self.corr_threshold)]
 
-        if len(to_drop) > 0:
-            print(f"Removing {len(to_drop)} highly correlated features: {to_drop}")
+        #if len(to_drop) > 0:
+            #print(f"Removing {len(to_drop)} highly correlated features: {to_drop}")
 
         self.data_x_train = self.data_x_train.drop(columns=to_drop)
         self.data_x_test = self.data_x_test.drop(columns=to_drop)
