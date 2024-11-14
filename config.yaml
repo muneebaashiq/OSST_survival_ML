@@ -33,7 +33,10 @@ survival:
   scoring: "as_concordance_index_ipcw_scorer"
   n_cv_splits: 4
   n_iter_search: 5
-  #grid_search_type: "Grid"
+  search_type:
+      SimpleExecution: False
+      GridSearch: True
+      RandomSearch: False
   scalers:
     StandardScaler: False
     MinMaxScaler: True

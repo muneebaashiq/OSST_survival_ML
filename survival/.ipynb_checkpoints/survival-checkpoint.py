@@ -21,6 +21,8 @@ from skopt import BayesSearchCV
 from survival.init_estimators import init_estimators, set_params_search_space
 from survival.CustomModelWrapper import CustomModelWrapper
 from helpers.nested_dict import NestedDefaultDict
+from helpers.call_OSST_grid_search import call_OSST_grid_search
+from helpers.call_simple_OSST import call_simple_OSST
 
 from osst.model.osst import OSST
 from osst.model.metrics import harrell_c_index, uno_c_index, integrated_brier_score, cumulative_dynamic_auc, compute_ibs_per_sample
@@ -49,8 +51,7 @@ class Survival:
         self.models_dict = config.survival.models
         self.n_cv_splits = config.survival.n_cv_splits
         self.n_iter_search = config.survival.n_iter_search
-        #self.grid_search_type = grid_search_type
-        #print("self.searchType", self.searchType)
+        self.search_type = config.survival.search_type
         self.total_combinations = (
             self.n_seeds
             * sum(self.scalers_dict.values())
@@ -76,6 +77,7 @@ class Survival:
 
         
         print("self.selector_params:", self.selector_params) 
+        print("self.model_params:", self.model_params) 
 
         try:  # load results if file exists
             if self.overwrite:
@@ -129,6 +131,7 @@ class Survival:
 
         return self.results_table
 
+    
     def fit_and_evaluate_pipeline(self):
         pbar = self.progress_manager.counter(
             total=self.total_combinations, desc="Training and evaluating all combinations", unit='it', leave=False
@@ -136,7 +139,11 @@ class Survival:
         for scaler_name, scaler in self.scalers.items():
             for selector_name, selector in self.selectors.items():
                 for bucketizer_name, bucketizer in self.bucketizers.items():
-                        print("Selector k value:", selector.get_params()['k']) 
+                        y_col_train = self.y_train[self.time_column]
+                        y_col_test = self.y_test[self.time_column]
+                        event_col_train = self.y_train[self.event_column]
+                        event_col_test = self.y_test[self.event_column]
+                        #print("Selector k value:", selector.get_params()['k']) 
                         try:
                             if (  # skip if already evaluated
                                 (self.results_table["Seed"] == self.seed)
@@ -169,7 +176,6 @@ class Survival:
                             
                                 "model_limit": 100
                               }
-                                                       
   
                             preprocessor = Pipeline(
                                     [
@@ -182,35 +188,36 @@ class Survival:
                                     ]
                             )
 
-                            print(self.y_train[self.event_column])
-                            preprocessor.fit(self.x_train, self.y_train[self.event_column])
+                            ## transforming the test and train as the out of the preprocessor into a format that OSST will take in
+                            
+                            #print(self.y_train[self.event_column])
+                            preprocessor.fit(self.x_train, event_col_train)
+                            transformed_train = preprocessor.transform(self.x_train)
 
-                            transformed_X = preprocessor.transform(self.x_train)
-
-                            print(transformed_X.shape)
-
+                            #print(transformed_X.shape)
                             selected_features = self.x_train.columns[preprocessor.named_steps['selector'].get_support()]  # get selected feature names
+                            transformed_train_df = pd.DataFrame(transformed_train, columns=selected_features)
+                            print(transformed_train_df.shape) 
 
-                            transformed_df = pd.DataFrame(transformed_X, columns=selected_features)
-                            print(transformed_df.shape) 
+                            transformed_test = preprocessor.transform(self.x_test)
 
-                            # Training OSST with the resample train data
-                            model = OSST(config)
-                            model.fit(transformed_df, self.y_train[self.event_column], self.y_train[self.time_column])
-                    
-                            # evaluation
-                            n_leaves = model.leaves()
-                            n_nodes = model.nodes()
-                            time = model.time
-                            print("Model training time: {}".format(time))
-                            print("# of leaves: {}".format(n_leaves))
-                    
-                            print("Train IBS score: {:.6f} ".format(\
-                            model.score(transformed_df, self.y_train[self.event_column], self.y_train[self.time_column])))
-
-                            print("Train IBS score: {:.6f} , Test IBS score: {:.6f}".format(\
-                            model.score(transformed_df, self.y_train[self.event_column], self.y_train[self.time_column]),  model.score(self.x_test, self.y_test[self.event_column], self.y_test[self.time_column])))
-
+                            #print(transformed_X.shape)
+                            selected_features = self.x_test.columns[preprocessor.named_steps['selector'].get_support()]  # get selected feature names
+                            transformed_test_df = pd.DataFrame(transformed_test, columns=selected_features)
+                            print(transformed_test_df.shape) 
+                 
+                            
+                            ## choosing which grid search will be executed based on the config file
+                            if self.search_type.get('SimpleExecution', False):
+                                call_simple_OSST(config, transformed_train_df, y_col_train, event_col_train, transformed_test_df, y_col_test, event_col_test)
+        
+                            if self.search_type.get('GridSearch', False):
+                                print("grid search is true")
+                                call_OSST_grid_search(config, transformed_train_df, y_col_train, event_col_train)
+                                #call_OSST_grid_search(config, transformed_df, self.y_train[self.time_column], self.y_train[self.event_column])
+        
+                            if self.search_type.get('RandomSearch', False):
+                                print("random search is true")
 
                                             
                                                    
@@ -221,3 +228,4 @@ class Survival:
         pbar.close()
 
   
+    

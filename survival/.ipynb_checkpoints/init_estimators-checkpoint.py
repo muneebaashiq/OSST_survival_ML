@@ -100,21 +100,11 @@ def fit_and_score_features(X, y, scoring):
 def set_params_search_space():
     
     model_params = {
-         "CoxPH": {
-            "model__estimator__alpha": Real(low=0.0001, high=10, prior="log-uniform")
-        }, 
         "OSST": {
             "model__estimator__regularization": Real(low=0.001, high=0.1),
             "model__estimator__depth_budget": Integer(low=3, high=7),
             "model__estimator__minimum_captured_points": Integer(low=5, high=8),
-        },
-        "RSF": {
-            "model__estimator__n_estimators": Integer(low=50, high=200),
-            "model__estimator__max_depth": Integer(low=5, high=50),
-            "model__estimator__min_samples_split": Integer(low=3, high=10),
-            "model__estimator__min_samples_leaf": Integer(low=2, high=10),
-            "model__estimator__max_features": Categorical([None, "sqrt", "log2"])
-        },
+        }
     }
 
     selector_params = {
