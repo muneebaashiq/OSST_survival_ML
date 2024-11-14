@@ -13,7 +13,7 @@ from survival.survival import Survival
 from report.aggregate_results import aggregate_results
 
 
-@hydra.main(version_base=None, config_path=".", config_name="config")
+@hydra.main(version_base=None, config_path=".", config_name="config2")
 def main(config):
     OmegaConf.register_new_resolver("numpy_range", numpy_range)  # adds ability to use numpy_arange() in config file
     if config.meta.out_dir is None:
