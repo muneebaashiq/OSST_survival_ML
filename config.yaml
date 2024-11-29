@@ -35,15 +35,15 @@ survival:
   n_iter_search: 5
   search_type:
       SimpleExecution: False
-      GridSearch: True
+      GridSearch: False
       RandomSearch: False
   scalers:
     StandardScaler: False
     MinMaxScaler: True
     RobustScaler: False
   feature_selectors:
-    SelectKBest: True
-    VarianceThreshold: False
+    SelectKBest: False
+    VarianceThreshold: True
     FastICA: False
     PCA: False
     KernelPCA: False

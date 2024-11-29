@@ -5,6 +5,7 @@ from osst.model.metrics import harrell_c_index, uno_c_index, integrated_brier_sc
 
 import numpy as np
 import pandas as pd
+import os
 
 def call_OSST_grid_search(configuration, X, y, event):
 
@@ -97,7 +98,7 @@ def call_OSST_grid_search(configuration, X, y, event):
         })
     
         # Check if the file exists and append results
-        file_path = 'Nov14_scores.csv'
-        file_exists = os.path.isfile(file_path)
-        result_df.to_csv(file_path, mode='a', header=not file_exists, index=False)
+        #file_path = 'Nov14_scores.csv'
+        #file_exists = os.path.isfile(file_path)
+        #result_df.to_csv(file_path, mode='a', header=not file_exists, index=False)
 

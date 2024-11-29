@@ -8,15 +8,10 @@ import pandas as pd
 from loguru import logger
 from sklearn.model_selection import StratifiedKFold
 from sklearn.pipeline import Pipeline
-from sklearn.preprocessing import KBinsDiscretizer
-from sksurv.metrics import (
-    concordance_index_censored,
-    concordance_index_ipcw,
-    cumulative_dynamic_auc,
-    integrated_brier_score,
-)
+from itertools import product
 import sksurv.metrics as sksurv_metrics
-from skopt import BayesSearchCV
+import random
+
 
 from survival.init_estimators import init_estimators, set_params_search_space
 from survival.CustomModelWrapper import CustomModelWrapper
@@ -24,14 +19,9 @@ from helpers.nested_dict import NestedDefaultDict
 from helpers.call_OSST_grid_search import call_OSST_grid_search
 from helpers.call_simple_OSST import call_simple_OSST
 
-from osst.model.osst import OSST
-from osst.model.metrics import harrell_c_index, uno_c_index, integrated_brier_score, cumulative_dynamic_auc, compute_ibs_per_sample
+from sklearn.feature_selection import SelectKBest,f_classif, VarianceThreshold, RFE
 
-from sklearn.preprocessing import MinMaxScaler
-from sklearn.feature_selection import SelectKBest, f_classif
-
-from sklearn.preprocessing import KBinsDiscretizer
-
+np.random.seed(42)
 
 class Survival:
     def __init__(self, config, progress_manager) -> None:
@@ -76,8 +66,8 @@ class Survival:
         self.selector_params, self.model_params = set_params_search_space()
 
         
-        print("self.selector_params:", self.selector_params) 
-        print("self.model_params:", self.model_params) 
+        #print("self.selector_params:", self.selector_params) 
+        #print("self.model_params:", self.model_params) 
 
         try:  # load results if file exists
             if self.overwrite:
@@ -111,12 +101,12 @@ class Survival:
         
         print("self.selectors 457,", self.selectors)
 
-        if 'SelectKBest' in self.selectors:
-            select_k_best = self.selectors['SelectKBest']
-            k_value = select_k_best.k  # Accessing the k value directly if it's stored
-            print("SelectKBest k value:", k_value)
-        else:
-            print("SelectKBest is not found in the selectors.")
+        #if 'SelectKBest' in self.selectors:
+            #select_k_best = self.selectors['SelectKBest']
+            #k_value = select_k_best.k  # Accessing the k value directly if it's stored
+            #print("SelectKBest k value:", k_value)
+        #else:
+            #print("SelectKBest is not found in the selectors.")
 
         
         self.x_train = x_train
@@ -156,7 +146,7 @@ class Survival:
                                 continue
                             
                             logger.info(f"Training {scaler_name} - {selector_name} - {bucketizer_name}")
-                            row = {"Seed": self.seed, "Scaler": scaler_name, "Selector": selector_name, "bucketizer": bucketizer_name}
+                            row = {"Seed": self.seed, "Scaler": scaler_name, "Selector": selector_name, "Bucketizer": bucketizer_name}
                             # Create pipeline and parameter grid
                             cv = StratifiedKFold(n_splits=self.n_cv_splits, random_state=self.seed, shuffle=True)
                             stratified_folds = [x for x in cv.split(self.x_train, self.y_train[self.event_column])]
@@ -179,11 +169,13 @@ class Survival:
   
                             preprocessor = Pipeline(
                                     [
-                                        ('scaler', MinMaxScaler()),
+                                        ('scaler', scaler),
+
+                                        ("selector", selector),
                                         
-                                        ('selector', SelectKBest(score_func=f_classif, k=20)),
+                                        #('selector', SelectKBest(score_func=f_classif, k=20)),
                                         
-                                        ('bucketizer',  KBinsDiscretizer(n_bins=3, encode='ordinal', strategy='uniform')),
+                                        ('bucketizer',  bucketizer),
                                                                           
                                     ]
                             )
@@ -209,15 +201,47 @@ class Survival:
                             
                             ## choosing which grid search will be executed based on the config file
                             if self.search_type.get('SimpleExecution', False):
+                                print("simple search is true")
                                 call_simple_OSST(config, transformed_train_df, y_col_train, event_col_train, transformed_test_df, y_col_test, event_col_test)
         
                             if self.search_type.get('GridSearch', False):
                                 print("grid search is true")
-                                call_OSST_grid_search(config, transformed_train_df, y_col_train, event_col_train)
+                                print("self.model_params:", self.model_params) 
+
+                                params = self.model_params['OSST']
+
+                                keys, values = zip(*params.items())
+                                all_combinations = [dict(zip(keys, v)) for v in product (*values)]
+
+                                print("all combinations", all_combinations)
+
+                                for combination in all_combinations:
+                                    config.update(combination)
+                                    print(" new config", config)
+                                    call_OSST_grid_search(config, transformed_train_df, y_col_train, event_col_train)
                                 #call_OSST_grid_search(config, transformed_df, self.y_train[self.time_column], self.y_train[self.event_column])
         
                             if self.search_type.get('RandomSearch', False):
                                 print("random search is true")
+                                params = self.model_params['OSST']
+                                keys, values = zip(*params.items())
+
+                                combination_num = 5
+                                
+                                
+                                random_combinations = [
+                                    dict(zip(keys, [random.choice(v) for v in values])) 
+                                    for _ in range (combination_num)
+                                ]
+
+                                
+                                for combination in random_combinations:
+                                    config.update(combination)
+                                    print(" new config", config)
+                                    call_OSST_grid_search(config, transformed_train_df, y_col_train, event_col_train)
+
+                                                                
+                                
 
                                             
                                                    
