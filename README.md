@@ -39,4 +39,4 @@ After the config file is set up properly, you can run the pipeline using:
 python3 main.py
 ```
 
-Results are automatically saved after each iteration and will not be recomputed unless the meta.overwrite flag is set to True.
+Results are automatically saved after each iteration in the scores.csv file and will not be recomputed unless the meta.overwrite flag is set to True.
