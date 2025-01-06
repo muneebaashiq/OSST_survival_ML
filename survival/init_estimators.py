@@ -101,7 +101,7 @@ def set_params_search_space():
     
     model_params = {
         "OSST": {
-            "regularization": [0.0001, 0.0005, 0.001, 0.005, 0.01, 0.1],
+            "regularization": [0.0001, 0.0005],
             "depth_budget": [6, 7, 8, 9] ,
             "minimum_captured_points": [5, 6, 7, 8]   
         }

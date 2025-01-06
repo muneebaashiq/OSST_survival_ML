@@ -18,6 +18,8 @@ from survival.CustomModelWrapper import CustomModelWrapper
 from helpers.nested_dict import NestedDefaultDict
 from helpers.call_OSST_grid_search import call_OSST_grid_search
 from helpers.call_simple_OSST import call_simple_OSST
+from helpers.call_CoxPH import call_CoxPH_grid_search
+
 
 from sklearn.feature_selection import SelectKBest,f_classif, VarianceThreshold, RFE
 
@@ -133,7 +135,7 @@ class Survival:
                         y_col_test = self.y_test[self.time_column]
                         event_col_train = self.y_train[self.event_column]
                         event_col_test = self.y_test[self.event_column]
-                        #print("Selector k value:", selector.get_params()['k']) 
+                       
                         try:
                             if (  # skip if already evaluated
                                 (self.results_table["Seed"] == self.seed)
@@ -169,21 +171,14 @@ class Survival:
   
                             preprocessor = Pipeline(
                                     [
-                                        ('scaler', scaler),
-
-                                        ("selector", selector),
-                                        
-                                        #('selector', SelectKBest(score_func=f_classif, k=20)),
-                                        
-                                        ('bucketizer',  bucketizer),
-                                                                          
+                                        ("selector", selector)                   
                                     ]
                             )
 
                             ## transforming the test and train as the out of the preprocessor into a format that OSST will take in
                             
                             #print(self.y_train[self.event_column])
-                            preprocessor.fit(self.x_train, event_col_train)
+                            preprocessor.fit(self.x_train, self.y_train)
                             transformed_train = preprocessor.transform(self.x_train)
 
                             #print(transformed_X.shape)
@@ -202,25 +197,25 @@ class Survival:
                             ## choosing which grid search will be executed based on the config file
                             if self.search_type.get('SimpleExecution', False):
                                 print("simple search is true")
-                                call_simple_OSST(config, transformed_train_df, y_col_train, event_col_train, transformed_test_df, y_col_test, event_col_test)
+                                call_simple_OSST(config, transformed_train_df, y_col_train, event_col_train, transformed_test_df, y_col_test, event_col_test, scaler, bucketizer)
         
                             if self.search_type.get('GridSearch', False):
                                 print("grid search is true")
-                                print("self.model_params:", self.model_params) 
+                                #print("self.model_params:", self.model_params) 
 
                                 params = self.model_params['OSST']
 
                                 keys, values = zip(*params.items())
                                 all_combinations = [dict(zip(keys, v)) for v in product (*values)]
 
-                                print("all combinations", all_combinations)
+                                #print("all combinations", all_combinations)
 
                                 for combination in all_combinations:
                                     config.update(combination)
                                     print(" new config", config)
-                                    call_OSST_grid_search(config, transformed_train_df, y_col_train, event_col_train)
-                                #call_OSST_grid_search(config, transformed_df, self.y_train[self.time_column], self.y_train[self.event_column])
-        
+                                    call_OSST_grid_search(config, transformed_train_df, y_col_train, event_col_train, scaler, bucketizer)
+                                    #call_CoxPH_grid_search(config, transformed_train_df, y_col_train, event_col_train, scaler, bucketizer)
+                               
                             if self.search_type.get('RandomSearch', False):
                                 print("random search is true")
                                 params = self.model_params['OSST']
@@ -238,7 +233,7 @@ class Survival:
                                 for combination in random_combinations:
                                     config.update(combination)
                                     print(" new config", config)
-                                    call_OSST_grid_search(config, transformed_train_df, y_col_train, event_col_train)
+                                    call_OSST_grid_search(config, transformed_train_df, y_col_train, event_col_train, scaler, bucketizer)
 
                                                                 
                                 

@@ -35,15 +35,15 @@ survival:
   n_iter_search: 5
   search_type:
       SimpleExecution: False
-      GridSearch: False
+      GridSearch: True
       RandomSearch: False
   scalers:
-    StandardScaler: False
+    StandardScaler: True
     MinMaxScaler: True
     RobustScaler: False
   feature_selectors:
-    SelectKBest: False
-    VarianceThreshold: True
+    SelectKBest: True
+    VarianceThreshold: False
     FastICA: False
     PCA: False
     KernelPCA: False
@@ -60,7 +60,7 @@ survival:
     TruncatedSVD: {}
   bucketizers:
     2BinBucketizer: True
-    3BinBucketizer: False
+    3BinBucketizer: True
     4BinBucketizer: False
   models:
     CoxPH: False
