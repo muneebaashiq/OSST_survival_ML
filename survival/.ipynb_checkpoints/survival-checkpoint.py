@@ -99,17 +99,6 @@ class Survival:
         self.scalers, self.selectors, self.bucketizers, self.models = init_estimators(
             self.seed, self.n_workers, self.scalers_dict, self.selectors_dict, self.bucketizers_dict, self.models_dict,  self.scoring
         )
-
-        
-        print("self.selectors 457,", self.selectors)
-
-        #if 'SelectKBest' in self.selectors:
-            #select_k_best = self.selectors['SelectKBest']
-            #k_value = select_k_best.k  # Accessing the k value directly if it's stored
-            #print("SelectKBest k value:", k_value)
-        #else:
-            #print("SelectKBest is not found in the selectors.")
-
         
         self.x_train = x_train
         self.y_train = y_train

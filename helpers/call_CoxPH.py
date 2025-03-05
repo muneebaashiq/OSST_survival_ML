@@ -30,14 +30,14 @@ def call_CoxPH_grid_search(configuration, X, y, event, scaler, bucketizer):
     
         fold_number = 1
     
-        print(f"The configuration is {configuration} \n")
+        #print(f"The configuration is {configuration} \n")
     
         for train_index, test_index in skf.split(X, event):
             X_train_fold, X_test_fold = X.iloc[train_index], X.iloc[test_index]
             y_train_fold, y_test_fold = y.iloc[train_index], y.iloc[test_index]
             event_train_fold, event_test_fold = event.iloc[train_index], event.iloc[test_index]
     
-            print("For fold ", fold_number, " following is the result")
+            #print("For fold ", fold_number, " following is the result")
 
             # Instead of in-place modification, create a new object if you're going to transform or modify data
             X_train_fold_copy = X_train_fold.copy()  # Creating a new copy if required
@@ -53,9 +53,9 @@ def call_CoxPH_grid_search(configuration, X, y, event, scaler, bucketizer):
             #print("event_train_fold", event_train_fold)
 
                   
-            print("X_train_fold shape:", X_train_fold1.shape)
+            #print("X_train_fold shape:", X_train_fold1.shape)
 
-            print(f"X_train_fold type: {type(X_train_fold1)}, shape: {X_train_fold1.shape}")
+            #print(f"X_train_fold type: {type(X_train_fold1)}, shape: {X_train_fold1.shape}")
 
             t = pd.concat(
                 [
@@ -65,7 +65,7 @@ def call_CoxPH_grid_search(configuration, X, y, event, scaler, bucketizer):
                 ], 
                 axis=1
             )            
-            print(t)
+            #print(t)
                         # Handle missing values
             if t.isna().any().any():
                 print("Handling missing values...")

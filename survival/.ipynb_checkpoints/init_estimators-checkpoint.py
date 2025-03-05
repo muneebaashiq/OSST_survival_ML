@@ -93,7 +93,6 @@ def fit_and_score_features(X, y, scoring):
         estimator.fit(X_feature, y)
         scores[feature] = estimator.score(X_feature, y)
 
-    #print("Feature Scores:", scores)
     return scores
 
 

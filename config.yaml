@@ -50,8 +50,7 @@ survival:
     TruncatedSVD: False
   feature_selector_params:
     SelectKBest:
-      selector__k: [5, 10, 15]
-      #selector__k: [15]
+      selector__k: [5, 10, 15, 20]
     VarianceThreshold:
       selector__threshold: ${numpy_range:0.01, 0.9, 0.1}
     FastICA: {}
@@ -60,19 +59,12 @@ survival:
     TruncatedSVD: {}
   bucketizers:
     2BinBucketizer: True
-    3BinBucketizer: True
+    3BinBucketizer: False
     4BinBucketizer: False
   models:
-    CoxPH: False
     OSST: True
-    RSF: False
   model_params:
-    CoxPH:
-      model__estimator__alpha: [0.0001, 0.001, 0.01, 0.1, 1, 10]
     OSST:
       model__estimator__regularization: [0.1]
       model__estimator__depth_budget: [5]
       model__estimator__minimum_captured_points: [3]
-    RSF:
-      model__estimator__n_estimators: [50, 100, 200]
-      model__estimator__max_depth: [null, 5, 10]
