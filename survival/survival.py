@@ -188,7 +188,7 @@ class Survival:
                                 print("simple search is true")
                                 call_simple_OSST(config, transformed_train_df, y_col_train, event_col_train, transformed_test_df, y_col_test, event_col_test, scaler, bucketizer)
         
-                            if self.search_type.get('GridSearch', False):
+                            elif self.search_type.get('GridSearch', False):
                                 print("grid search is true")
                                 #print("self.model_params:", self.model_params) 
 
@@ -201,11 +201,10 @@ class Survival:
 
                                 for combination in all_combinations:
                                     config.update(combination)
-                                    print(" new config", config)
                                     call_OSST_grid_search(config, transformed_train_df, y_col_train, event_col_train, scaler, bucketizer)
                                     #call_CoxPH_grid_search(config, transformed_train_df, y_col_train, event_col_train, scaler, bucketizer)
                                
-                            if self.search_type.get('RandomSearch', False):
+                            elif self.search_type.get('RandomSearch', False):
                                 print("random search is true")
                                 params = self.model_params['OSST']
                                 keys, values = zip(*params.items())
@@ -221,7 +220,6 @@ class Survival:
                                 
                                 for combination in random_combinations:
                                     config.update(combination)
-                                    print(" new config", config)
                                     call_OSST_grid_search(config, transformed_train_df, y_col_train, event_col_train, scaler, bucketizer)
 
                                                                 

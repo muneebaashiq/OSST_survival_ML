@@ -8,7 +8,6 @@ import pandas as pd
 import os
 from sklearn.pipeline import Pipeline
 from sklearn.model_selection import KFold
-kf = KFold(n_splits=2, shuffle=True)
 
 def call_OSST_grid_search(configuration, X_input, y_input, event_input, scaler, bucketizer):
         preprocessor = Pipeline(
@@ -23,7 +22,6 @@ def call_OSST_grid_search(configuration, X_input, y_input, event_input, scaler, 
         event_input = pd.DataFrame(event_input, columns=['Event'])
     
         skf = StratifiedKFold(n_splits=4)
-        #skf = KFold(n_splits=2, shuffle=True)
         # Lists to store scores
         train_scores = []
         test_scores = []
@@ -93,9 +91,6 @@ def call_OSST_grid_search(configuration, X_input, y_input, event_input, scaler, 
             y_test_fold = pd.DataFrame(y_test_fold)
 
 
-
-            #print("X_train_fold", y_test_fold)
-
             # Training OSST with the resample train data
             model = OSST(configuration)
             model.fit(X_train_fold, event_train_fold, y_train_fold)
@@ -106,12 +101,6 @@ def call_OSST_grid_search(configuration, X_input, y_input, event_input, scaler, 
             n_nodes = model.nodes()
             time = model.time
             
-            #print("Model training time: {}".format(time))
-            #print("# of leaves: {}".format(n_leaves))
-    
-            #print("Train IBS score: {:.6f} , Test IBS score: {:.6f}".format(\
-            # model.score(X_train_fold, event_train_fold, y_train_fold), model.score(X_test_fold, event_test_fold, y_test_fold)))
-    
             times_train = np.unique(y_train_fold.values.reshape(-1))
             times_test = np.unique(y_test_fold.values.reshape(-1))
     
@@ -120,17 +109,11 @@ def call_OSST_grid_search(configuration, X_input, y_input, event_input, scaler, 
     
             S_hat_test = model.predict_survival_function(X_test_fold)
             estimates_test = np.array([f(times_test) for f in S_hat_test])
-    
-            #print("Train Harrell's c-index: {:.6f}, Test Harrell's c-index: {:.6f}\n".format(\
-                # harrell_c_index(event_train_fold, y_train_fold, estimates_train, times_train)[0], \
-                # harrell_c_index(event_test_fold, y_test_fold, estimates_test, times_test)[0]))
-            
+     
             train_score = harrell_c_index(event_train_fold, y_train_fold, estimates_train, times_train)[0]
             test_score = harrell_c_index(event_test_fold, y_test_fold, estimates_test, times_test)[0]
     
-            #if test_score > 0.7:
-                #print(f"For fold {fold_number} the test score is {test_score} for configuration {configuration} \n")
-    
+
             fold_number += 1
     
             train_scores.append(train_score)
@@ -148,9 +131,6 @@ def call_OSST_grid_search(configuration, X_input, y_input, event_input, scaler, 
         'Leaves': leaves,
         'Nodes': nodes
         })
-    
-        # Print the DataFrame
-        #print(df_scores)
 
         # Calculate average scores and standard deviations
         mean_train_score = np.mean(train_scores)
@@ -163,13 +143,6 @@ def call_OSST_grid_search(configuration, X_input, y_input, event_input, scaler, 
         std_time = np.std(times)
         std_leaves = np.std(leaves)
         std_nodes = np.std(nodes)
-    
-    
-        #print(f'Mean Training Score: {mean_train_score}')
-        #print(f'Mean Test Score: {mean_test_score}\n')
-    
-        #if mean_test_score > 0.6:
-                #print("The mean_test_score is", mean_test_score, "this configuration", configuration)
     
         result_df = pd.DataFrame({
             'Mean Train Score': [mean_train_score],
@@ -186,8 +159,6 @@ def call_OSST_grid_search(configuration, X_input, y_input, event_input, scaler, 
             'Scaler': [scaler],
             'Configuration': [configuration],
         })
-
-        #print(result_df)
     
         # Check if the file exists and append results
         file_path = 'scores.csv'

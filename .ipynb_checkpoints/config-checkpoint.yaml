@@ -39,7 +39,7 @@ survival:
       RandomSearch: False
   scalers:
     StandardScaler: True
-    MinMaxScaler: True
+    MinMaxScaler: False
     RobustScaler: False
   feature_selectors:
     SelectKBest: True

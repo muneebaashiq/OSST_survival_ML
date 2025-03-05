@@ -5,6 +5,7 @@ import pandas as pd
 import numpy as np
 
 def call_simple_OSST(config, x_train, y_col_train, event_col_train, x_test, y_col_test, event_col_test, scaler, bucketizer):
+    
                             preprocessor = Pipeline(
                                     [
                                         ("scaler", scaler),
