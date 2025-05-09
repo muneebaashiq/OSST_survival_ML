@@ -66,6 +66,9 @@ def call_OSST_grid_search(configuration, X_input, y_input, event_input, scaler, 
                 axis=1
             )   
 
+            df_train.to_excel("df_train_transfored.xlsx", index=False)
+
+
             # Resetting the indices of the df
             df_test = pd.concat(
                 [

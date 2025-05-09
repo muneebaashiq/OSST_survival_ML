@@ -8,6 +8,9 @@ import pandas as pd
 from loguru import logger
 from sklearn.model_selection import StratifiedKFold
 from sklearn.pipeline import Pipeline
+from sklearn.compose import ColumnTransformer
+from sklearn.preprocessing import OneHotEncoder, StandardScaler
+from sklearn.impute import SimpleImputer
 from itertools import product
 import sksurv.metrics as sksurv_metrics
 import random
@@ -22,6 +25,8 @@ from helpers.call_CoxPH import call_CoxPH_grid_search
 
 
 from sklearn.feature_selection import SelectKBest,f_classif, VarianceThreshold, RFE
+from sklearn.decomposition import FastICA, PCA, KernelPCA, TruncatedSVD
+
 
 np.random.seed(42)
 
@@ -157,31 +162,66 @@ class Survival:
                             
                                 "model_limit": 100
                               }
+
+                            # Identify column types
+                            categorical_cols = self.x_train.select_dtypes(include=["object", "category"]).columns.tolist()
+                            numerical_cols = self.x_train.select_dtypes(include=["int64", "float64"]).columns.tolist()
+
+                            # Define transformers for each type
+                            categorical_transformer = Pipeline(steps=[
+                                ("imputer", SimpleImputer(strategy="most_frequent")),
+                                ("encoder", OneHotEncoder(handle_unknown="ignore"))
+                            ])
+                            
+                            numerical_transformer = Pipeline(steps=[
+                                ("imputer", SimpleImputer(strategy="mean")),
+                            ])
+
+                            # Combine into ColumnTransformer
+                            column_preprocessor = ColumnTransformer(
+                                transformers=[
+                                    ("num", numerical_transformer, numerical_cols),
+                                    ("cat", categorical_transformer, categorical_cols)
+                                ]
+                            )
+                            
   
                             preprocessor = Pipeline(
                                     [
+                                        ("preprocessor", column_preprocessor),
                                         ("selector", selector)                   
                                     ]
                             )
 
                             ## transforming the test and train as the out of the preprocessor into a format that OSST will take in
-                            
-                            #print(self.y_train[self.event_column])
                             preprocessor.fit(self.x_train, self.y_train)
                             transformed_train = preprocessor.transform(self.x_train)
 
-                            #print(transformed_X.shape)
-                            selected_features = self.x_train.columns[preprocessor.named_steps['selector'].get_support()]  # get selected feature names
-                            transformed_train_df = pd.DataFrame(transformed_train, columns=selected_features)
-                            print(transformed_train_df.shape) 
-
                             transformed_test = preprocessor.transform(self.x_test)
 
-                            #print(transformed_X.shape)
-                            selected_features = self.x_test.columns[preprocessor.named_steps['selector'].get_support()]  # get selected feature names
+                            if isinstance(selector, SelectKBest):
+                                feature_names = preprocessor.named_steps["preprocessor"].get_feature_names_out()
+                                selected_features = feature_names[preprocessor.named_steps["selector"].get_support()]
+                            elif isinstance(selector, VarianceThreshold):
+                                selected_features = self.x_train.columns
+                            elif isinstance(selector, FastICA):
+                                selected_features = [f"ICA_Component_{i}" for i in range(transformed_train.shape[1])]
+                            elif isinstance(selector, PCA):
+                                selected_features = [f"PC{i+1}" for i in range(transformed_train.shape[1])]
+                            elif isinstance(selector, KernelPCA):
+                                selected_features = [f"KernelPC{i+1}" for i in range(transformed_train.shape[1])]
+                            elif isinstance(selector, TruncatedSVD):
+                                selected_features = [f"SVD_Component_{i+1}" for i in range(transformed_train.shape[1])]
+                            else:
+                                selected_features = [f"feature_{i}" for i in range(transformed_train.shape[1])]
+                            
+                            # Create DataFrame with selected feature names
+                            transformed_train_df = pd.DataFrame(transformed_train, columns=selected_features)
                             transformed_test_df = pd.DataFrame(transformed_test, columns=selected_features)
-                            print(transformed_test_df.shape) 
-                 
+                            
+                            print(transformed_train_df.shape)  # To check transformed data shape
+                            transformed_train_df.to_excel("transformed_train_df.xlsx", index=False)
+
                             
                             ## choosing which grid search will be executed based on the config file
                             if self.search_type.get('SimpleExecution', False):
@@ -221,11 +261,7 @@ class Survival:
                                 for combination in random_combinations:
                                     config.update(combination)
                                     call_OSST_grid_search(config, transformed_train_df, y_col_train, event_col_train, scaler, bucketizer)
-
-                                                                
-                                
-
-                                            
+                
                                                    
                         except Exception as e:
                             print(
