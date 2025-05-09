@@ -9,8 +9,8 @@ hydra:
     dir: .
 
 meta:
-  in_file: /home/muneeba/survival_repo/OSST_survival_ML/Data/80_original.xlsx
-  test_file: /home/muneeba/survival_repo/OSST_survival_ML/Data/20_original.xlsx
+  in_file: /home/muneeba/survival_repo/OSST_survival_ML/Data/kaggle_train_data.xlsx
+  test_file: /home/muneeba/survival_repo/OSST_survival_ML/Data/kaggle_test_data.xlsx
   out_dir: /home/muneeba/survival_repo/OSST_survival_ML/output
   events: "Event"
   times: "Time"
@@ -42,12 +42,12 @@ survival:
     MinMaxScaler: False
     RobustScaler: False
   feature_selectors:
-    SelectKBest: True
+    SelectKBest: False
     VarianceThreshold: False
     FastICA: False
     PCA: False
     KernelPCA: False
-    TruncatedSVD: False
+    TruncatedSVD: True
   feature_selector_params:
     SelectKBest:
       selector__k: [5, 10, 15, 20]
