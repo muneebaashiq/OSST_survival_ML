@@ -35,8 +35,8 @@ survival:
   n_iter_search: 5
   search_type:
       SimpleExecution: False
-      GridSearch: True
-      RandomSearch: False
+      GridSearch: False
+      RandomSearch: True
   scalers:
     StandardScaler: True
     MinMaxScaler: True

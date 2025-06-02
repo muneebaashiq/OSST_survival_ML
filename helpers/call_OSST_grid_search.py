@@ -149,7 +149,7 @@ def call_OSST_grid_search(configuration, X_input, y_input, event_input, scaler, 
         std_time = np.std(times)
         std_leaves = np.std(leaves)
         std_nodes = np.std(nodes)
-    
+
         result_df = pd.DataFrame({
             'Bucketizer': [bucketizer],
             'Scaler': [scaler],
@@ -167,8 +167,6 @@ def call_OSST_grid_search(configuration, X_input, y_input, event_input, scaler, 
             'Mean model num of nodes': [mean_nodes],
             'Std model num of nodes': [mean_nodes],
         })
-
-        return result_df
 
 
         # Check if the file exists and append results

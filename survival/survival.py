@@ -230,32 +230,18 @@ class Survival:
                                 call_simple_OSST(config, transformed_train_df, y_col_train, event_col_train, transformed_test_df, y_col_test, event_col_test, scaler, bucketizer)
         
                             elif self.search_type.get('GridSearch', False):
-                                print("grid search is true")
-                                #print("self.model_params:", self.model_params) 
-
                                 params = self.model_params['OSST']
 
                                 keys, values = zip(*params.items())
                                 all_combinations = [dict(zip(keys, v)) for v in product (*values)]
                                 grid_search = True
-                                all_results = []
 
                                 for combination in all_combinations:
                                     config.update(combination)
-                                    result_df = call_OSST_grid_search(config, transformed_train_df, y_col_train, event_col_train, scaler, bucketizer, selector, grid_search)
-                                    all_results.append(result_df)
-
-                                final_df = pd.concat(all_results, ignore_index=True)
-
-                                # Save to timestamped file in scores/
-                                os.makedirs('scores', exist_ok=True)
-                                timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
-                                file_path = f'scores/scores_{timestamp}.csv'
-                                final_df.to_csv(file_path, index=False)
+                                    call_OSST_grid_search(config, transformed_train_df, y_col_train, event_col_train, scaler, bucketizer, selector, grid_search)
 
                                
                             elif self.search_type.get('RandomSearch', False):
-                                print("random search is true")
                                 params = self.model_params['OSST']
                                 keys, values = zip(*params.items())
 
