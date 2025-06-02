@@ -39,10 +39,10 @@ survival:
       RandomSearch: False
   scalers:
     StandardScaler: True
-    MinMaxScaler: False
+    MinMaxScaler: True
     RobustScaler: False
   feature_selectors:
-    SelectKBest: False
+    SelectKBest: True
     VarianceThreshold: False
     FastICA: False
     PCA: False
