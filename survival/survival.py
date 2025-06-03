@@ -2,6 +2,7 @@
 import os
 import sys
 import pickle
+from datetime import datetime
 
 import numpy as np
 import pandas as pd
@@ -229,27 +230,23 @@ class Survival:
                                 call_simple_OSST(config, transformed_train_df, y_col_train, event_col_train, transformed_test_df, y_col_test, event_col_test, scaler, bucketizer)
         
                             elif self.search_type.get('GridSearch', False):
-                                print("grid search is true")
-                                #print("self.model_params:", self.model_params) 
-
                                 params = self.model_params['OSST']
 
                                 keys, values = zip(*params.items())
                                 all_combinations = [dict(zip(keys, v)) for v in product (*values)]
-
-                                #print("all combinations", all_combinations)
+                                grid_search = True
 
                                 for combination in all_combinations:
                                     config.update(combination)
-                                    call_OSST_grid_search(config, transformed_train_df, y_col_train, event_col_train, scaler, bucketizer)
-                                    #call_CoxPH_grid_search(config, transformed_train_df, y_col_train, event_col_train, scaler, bucketizer)
+                                    call_OSST_grid_search(config, transformed_train_df, y_col_train, event_col_train, scaler, bucketizer, selector, grid_search)
+
                                
                             elif self.search_type.get('RandomSearch', False):
-                                print("random search is true")
                                 params = self.model_params['OSST']
                                 keys, values = zip(*params.items())
 
                                 combination_num = 5
+                                grid_search = False
                                 
                                 
                                 random_combinations = [
@@ -260,7 +257,7 @@ class Survival:
                                 
                                 for combination in random_combinations:
                                     config.update(combination)
-                                    call_OSST_grid_search(config, transformed_train_df, y_col_train, event_col_train, scaler, bucketizer)
+                                    call_OSST_grid_search(config, transformed_train_df, y_col_train, event_col_train, scaler, bucketizer, selector, grid_search)
                 
                                                    
                         except Exception as e:

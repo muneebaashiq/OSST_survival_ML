@@ -8,8 +8,11 @@ import pandas as pd
 import os
 from sklearn.pipeline import Pipeline
 from sklearn.model_selection import KFold
+from datetime import datetime
+import os
 
-def call_OSST_grid_search(configuration, X_input, y_input, event_input, scaler, bucketizer):
+
+def call_OSST_grid_search(configuration, X_input, y_input, event_input, scaler, bucketizer, selector, grid_search):
         preprocessor = Pipeline(
                 [
                     ("scaler", scaler),
@@ -146,8 +149,13 @@ def call_OSST_grid_search(configuration, X_input, y_input, event_input, scaler, 
         std_time = np.std(times)
         std_leaves = np.std(leaves)
         std_nodes = np.std(nodes)
-    
+
         result_df = pd.DataFrame({
+            'Bucketizer': [bucketizer],
+            'Scaler': [scaler],
+            'Selector': [selector],
+            'Configuration': [configuration],
+            'Grid Search': [grid_search],
             'Mean Train Score': [mean_train_score],
             'Std Train Score': [std_train_score],
             'Mean Test Score': [mean_test_score],
@@ -158,15 +166,13 @@ def call_OSST_grid_search(configuration, X_input, y_input, event_input, scaler, 
             'Std model num of leaves': [std_leaves],
             'Mean model num of nodes': [mean_nodes],
             'Std model num of nodes': [mean_nodes],
-            'Bucketizer': [bucketizer],
-            'Scaler': [scaler],
-            'Configuration': [configuration],
         })
-    
+
+
         # Check if the file exists and append results
         file_path = 'scores.csv'
         file_exists = os.path.isfile(file_path)
         result_df.to_csv(file_path, mode='a', header=not file_exists, index=False)
-           
-    
-    
+
+
+        
