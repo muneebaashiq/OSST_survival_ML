@@ -25,11 +25,16 @@ Most important is the path to your input_file and the names of your events and t
 
 ### Notes for updating the config.yaml file
 1. The complete dataset that you have needs to separated into the train and test dataset before running the pipeline.
-2. The train and test datasets needs to be excel files.
+2. The train and test datasets need to be excel files.
 3. The path to the train dataset excel file will go in the “in_file” entry in the config.yaml file.
 4. The path to the test dataset excel file will go in the “test_file” entry in the config.yaml file.
 5. The time and event columns in your dataset should be either name “Time” and “Event respectively or their names must be changed in the config.yaml file.
 6. The are multiple models/processes need to done to prepare the data for OSST model execution all of them can be changed if it is taking too long for the model to train.
+7. After the program finishes running successfully, a scores file will be created. You can download this file to review the results and detailed information.
+
+**Important:** If you run the program again after modifying the config.yaml file, please delete the existing scores file beforehand. Otherwise, new results will be appended to the previous file instead of creating a fresh one.
+
+It is recommended to delete the old scores file each time before rerunning to avoid any confusion about which results correspond to which run.
 
 ## Run
 
